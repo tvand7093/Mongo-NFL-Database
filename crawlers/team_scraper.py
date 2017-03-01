@@ -6,8 +6,8 @@ class TeamScraper(object):
 		self.player_scraper = PlayerScraper()
 		self.team_crawler = TeamCrawler()
 
-	def scrape(self, url):
-		table = self.team_crawler.getPlayersTable(url)
+	def scrape(self, team):
+		table = self.team_crawler.getPlayersTable(team['url'])
 		columns = table.xpath(".//tr")[1].xpath(".//td")
 
 		columnIdx = 0
@@ -30,7 +30,7 @@ class TeamScraper(object):
 			playerPositions.insert(0, firstGroup)
 
 			players = column.xpath(".//ul")
-			mapped = map(lambda (i, el): self.buildPlayers(playerPositions[i], el), enumerate(players))
+			mapped = map(lambda (i, el): self.buildPlayers(team, playerPositions[i], el), enumerate(players))
 
 			for group in mapped:
 				for player in group:
@@ -38,5 +38,5 @@ class TeamScraper(object):
 		
 		return results
 
-	def buildPlayers(self, positionGroup, ul):
-		return [self.player_scraper.scrape(positionGroup, player) for player in ul.xpath('./li')]
+	def buildPlayers(self, team, positionGroup, ul):
+		return [self.player_scraper.scrape(team, positionGroup, player) for player in ul.xpath('./li')]

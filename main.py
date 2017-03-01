@@ -52,7 +52,7 @@ def scrape(db):
 
     # add the list of players to a team.
     for team in teams:
-        players = teamScraper.scrape(team['url'])
+        players = teamScraper.scrape(team)
         playerIds = insertPlayers(db, players)
         team['players'] = playerIds
 

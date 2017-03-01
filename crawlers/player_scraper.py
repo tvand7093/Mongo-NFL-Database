@@ -7,7 +7,7 @@ class PlayerScraper(object):
 
     def scrapeNumber(self, li):
         """ Gets the player's jersey number. """
-        return li.xpath('./span/text()')[0].encode('ascii', 'ignore'),
+        return li.xpath('./span/text()')[0].encode('ascii', 'ignore')
 
     def scrapeName(self, li):
         """ Gets the name of a player. """
@@ -68,12 +68,13 @@ class PlayerScraper(object):
 
         return positionType[positionGroup]
 
-    def scrape(self, positionGroup, listItem):
+    def scrape(self, team, positionGroup, listItem):
         player = {
             "name": self.scrapeName(listItem),
             "number": self.scrapeNumber(listItem),
             "url": self.scrapeLink(listItem),
-            "position": self.scrapePosition(positionGroup)
+            "position": self.scrapePosition(positionGroup),
+            "team": team
         }
 
         specialty = self.scrapeSpecialty(listItem)
