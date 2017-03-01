@@ -2,6 +2,8 @@
 from crawlers.nfl_crawler import NFLCrawler
 from crawlers.scraper import Scraper
 from crawlers.coach_scraper import CoachScraper
+from crawlers.team_scraper import TeamScraper
+
 from pymongo import MongoClient, TEXT
 from config import Config
 
@@ -23,7 +25,13 @@ def reset(db):
     
     print "Resetting database state..."
     db.teams.drop()
+    db.players.drop()
     print "Database reset"
+
+def insertPlayers(db, players):
+    insertedIds = db.players.insert_many(players)
+    db.players.create_index([('$**', TEXT)], default_language='english')
+    return insertedIds.inserted_ids
 
 def insertTeams(db, teams):
     db.teams.insert_many(teams)
@@ -33,13 +41,22 @@ def scrape(db):
     """ Main method for scraping all relevant data. """
 
     print "Scraping data..."
+    # Build scrapers
     nfl = NFLCrawler()
+    teamScraper = TeamScraper()
     team = Scraper()
 
+    # Scrape data
     html = nfl.getClubsHtml()
     teams = team.scrape(html)
-    insertTeams(db, teams)
 
+    # add the list of players to a team.
+    for team in teams:
+        players = teamScraper.scrape(team['url'])
+        playerIds = insertPlayers(db, players)
+        team['players'] = playerIds
+
+    insertTeams(db, teams)
     print "Done scraping data..."
 
 def main():

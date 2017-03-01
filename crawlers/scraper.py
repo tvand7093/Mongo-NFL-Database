@@ -62,14 +62,15 @@ class Scraper(BaseCrawler):
         return coach
 
 
-    def insertTeam(self, name, coach, city, division, stadium):
+    def insertTeam(self, name, url, coach, city, division, stadium):
         """ Insert a new team into the database and return the new ORM object. """
 
         team = {
             "name": name,
             "home_city": city,
             "division": division,
-            "stadium": stadium
+            "stadium": stadium,
+            "url": url
         }
 
         if coach != None:
@@ -88,11 +89,17 @@ class Scraper(BaseCrawler):
 
         # Obtain the name of the current team. If none, it is a weird row so skip it.
         teamText = node.xpath('./td/b/a/text()')
+        teamLink = node.xpath('./td/b/a')
         team = ''
         if len(teamText) > 0:
             team = teamText[0]
         else: 
             return None
+
+        teamUrl = ''
+        if len(teamLink) > 0:
+            teamUrl = teamLink[0].get('href')
+        
         
         # Metadata will contain stadium name and city/state information.
         metadata = node.xpath('./td/a/text()')
@@ -138,6 +145,7 @@ class Scraper(BaseCrawler):
             'capacity': capacity,
             'division': division,
             'team': team,
+            'teamLink': teamUrl,
             'coordinates': coordinates
         }
 
@@ -187,7 +195,7 @@ class Scraper(BaseCrawler):
                 coach = self.insertCoach(coachInfo.name, coachInfo.dateOfBirth, coachCity, coachInfo.image)
 
             # Always add a team.
-            team = self.insertTeam(context['team'], coach, city, division, stadium)
+            team = self.insertTeam(context['team'], context['teamLink'], coach, city, division, stadium)
             teams.append(team)
 
         return teams
